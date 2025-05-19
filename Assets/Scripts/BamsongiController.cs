@@ -95,5 +95,6 @@ public class BamsongiController : MonoBehaviour
         fDistance = Vector2.Distance(vHitXY, vCenterXY);
 
         GameManager.Instance.f_AddScoreByDistance(fDistance, fMaxRadius); //점수 계산 및 누적 처리
+        UIManager.Instance.f_UpdateScore(); //점수 UI 갱신
     }
 }
