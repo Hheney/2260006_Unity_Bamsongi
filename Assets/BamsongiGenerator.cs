@@ -26,6 +26,7 @@ public class BamsongiGenerator : MonoBehaviour
             //게임을 실행하는 도중에 밤송이 오브젝트를 생성
             insBamsongiPrefab = Instantiate(gBamsongiPrefab);
 
+            
             /*
              * Ray 클래스
              * Ray(레이)는 이름 그대로 광선이며, 광원의 좌표(Origin)와 광선을 방향(direction)을 멤버 변수로 갖음
