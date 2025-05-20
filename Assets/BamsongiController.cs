@@ -1,6 +1,8 @@
 /*
  * 마우스를 클릭하면 밤송이(Chestnut Bur)가 과녁으로 날아가는 동작 제어 스크립트
  */
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BamsongiController : MonoBehaviour
@@ -15,12 +17,31 @@ public class BamsongiController : MonoBehaviour
     float fMaxRadius = 0.0f;    //과녁의 크기
     float fKillObjTime = 3.0f;  //오브젝트 삭제 시간
 
+    //밤송이의 궤적을 시각적 표현을 위해 LineRenderer를 사용함
+    LineRenderer lineRenderer = null;
+    List<Vector3> trajectoryPoint = new List<Vector3>(); //밤송이의 궤적 지점 List
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         gTarget = GameObject.Find("Target");                //과녁 오브젝트 불러오기
         boxCollider = gTarget.GetComponent<BoxCollider>();  //과녁 오브젝트의 BoxCollider 기능 불러오기
+        lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer.positionCount = 0;
     }
+
+    private void FixedUpdate()
+    {
+        //Rigidbody가 움직이는 동안의 위치를 궤적으로 그림
+        if (!GetComponent<Rigidbody>().isKinematic)
+        {
+            trajectoryPoint.Add(transform.position);
+
+            lineRenderer.positionCount = trajectoryPoint.Count;
+            lineRenderer.SetPositions(trajectoryPoint.ToArray());
+        }
+    }
+
 
     // Update is called once per frame
     void Update()
