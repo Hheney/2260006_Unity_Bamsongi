@@ -15,6 +15,8 @@ public class BamsongiController : MonoBehaviour
     float fDistance = 0.0f;     //밤송이 타격지점과, 원의 중심까지의 거리
     float fMaxRadius = 0.0f;    //과녁의 크기
 
+    float fKillObjTime = 3.0f; //오브젝트 삭제 시간
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -31,7 +33,7 @@ public class BamsongiController : MonoBehaviour
          * 지면으로 낙하하는 것을 막기 위함
          * Start 메소드를 호출하는 시작과 동시에 밤송이가 과녁으로 날아감
          */
-        f_TargetShoot(new Vector3(0.0f, 200.0f, 2000.0f));
+        //f_TargetShoot(new Vector3(0.0f, 200.0f, 2000.0f));
     }
 
     // Update is called once per frame
@@ -95,6 +97,10 @@ public class BamsongiController : MonoBehaviour
         fDistance = Vector2.Distance(vHitXY, vCenterXY);
 
         GameManager.Instance.f_AddScoreByDistance(fDistance, fMaxRadius); //점수 계산 및 누적 처리
+
         UIManager.Instance.f_UpdateScore(); //점수 UI 갱신
+        UIManager.Instance.f_UpdateTotalScore(); //총점 UI 갱신
+
+        Destroy(gameObject, fKillObjTime); //3초뒤 삭제
     }
 }
