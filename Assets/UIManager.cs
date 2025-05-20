@@ -1,4 +1,3 @@
-using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +10,11 @@ public class UIManager : MonoBehaviour
     private GameObject gPowerGauge = null;                  //PowerGauge 오브젝트 필드
     private UnityEngine.UI.Image imgPowerGaugeFill = null;  //캡슐화를 위해 private 접근 FillAmount 필드
     private static UIManager _instance = null;
+
+    /* 아래와 같은 코드로 변경 예정
+    [SerializeField] private GameObject InsGauge = null;
+    private UnityEngine.UI.Image insPowerFill = null;
+    */
 
     public float GaugeFillAmount //FillAmount Read-Only 프로퍼티
     {
@@ -33,6 +37,8 @@ public class UIManager : MonoBehaviour
         imgPowerGaugeFill = gPowerGauge.GetComponent<UnityEngine.UI.Image>();
 
         gPowerGauge.SetActive(false); //PowerGauge를 시작시 비활성화;
+
+        //insPowerFill = InsGauge.GetComponent<UnityEngine.UI.Image>();
     }
 
     // Update is called once per frame
