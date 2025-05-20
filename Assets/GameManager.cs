@@ -1,5 +1,19 @@
 using UnityEngine;
+using UnityEngine.SceneManagement; //씬을 전환하기 위한 씬매니저 임포트
 using UnityEngine.SocialPlatforms.Impl;
+
+//씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
+public enum SceneName
+{
+    //프로젝트 내 씬 구성창
+    /*
+     * 예시
+       ThirdStage, //스테이지3 씬
+       ClearScene  //클리어 씬
+     */
+
+    GameScene //게임 씬
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -51,6 +65,58 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    /*
+     * 유니티에서 씬을 로드하는 것은 SceneManger.LoadScene() 메소드를 사용
+     * 씬 이름이나 빌드 설정 인덱스를 파라미터로 전달하여 특정 씬을 로드할 수 있음
+     * 씬 이름으로 로드 : SceneManger.LoadScene("MySceneName");
+     * 빌드 설정 인덱스로 로드 : SceneManger.LoadScene(1); (두 번째 씬을 로드)
+     * SceneManger 클래스의 LoadScene 메소드를 사용해 게임 씬으로 전환
+     */
+
+    /// <summary> 매개변수로 받은 씬으로 이동하는 메소드 </summary>
+    public void f_OpenScene(SceneName sceneName)
+    {
+        //SceneManager.LoadScene(SceneName);
+        SceneManager.LoadScene(sceneName.ToString());
+    }
+
+    /*
+     * GetActiveScene()은 현재 씬 이름을 문자열로 반환한다.
+     * 그러나 씬 명칭 입력을 enum을 사용할 예정이므로,
+     * 씬 이름을 enum으로 매핑해주는 메소드를 생성함
+     */
+
+    /// <summary> 현재 씬 명칭을 정의된 Enum과 매핑하는 메소드 </summary>
+    public SceneName f_GetCurrentSceneName()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+
+        //활성화된 string 타입 씬 이름을 enum에 정의된 이름일 경우 현재 씬 반환
+        if (System.Enum.TryParse(sceneName, out SceneName currentScene))
+        {
+            return currentScene;
+        }
+        else
+        {
+            Debug.LogWarning($"씬 {sceneName}이 SceneName Enum에 존재하지 않습니다.");
+        }
+
+        //!에러방지 임시코드!
+        return SceneName.GameScene;
+        //return SceneName.TitleScene; //예외 사항이 발생시 타이틀화면으로 이동
+    }
+
+    /// <summary> 활성화된 씬 네임을 불러오는 메소드 </summary>
+    public string f_GetSceneName() //활성화된 씬 이름을 불러와서 씬에 맞는 BGM 재생을 자동화 하기위함
+    {
+        string sSceneName = null;
+
+        sSceneName = SceneManager.GetActiveScene().name;
+
+        return sSceneName;
+    }
+
 
     /// <summary>
     /// 거리 기반으로 점수 계산 후 총점에 가산하는 메소드
