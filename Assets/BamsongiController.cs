@@ -25,7 +25,11 @@ public class BamsongiController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //밤송이가 화면 아래로 낙하시 삭제
+        if (transform.position.y < -3.0f)
+        {
+            Destroy(gameObject); 
+        }
     }
 
     /*
