@@ -15,7 +15,7 @@ public class BamsongiController : MonoBehaviour
 
     float fDistance = 0.0f;     //밤송이 타격지점과, 원의 중심까지의 거리
     float fMaxRadius = 0.0f;    //과녁의 크기
-    float fKillObjTime = 3.0f;  //오브젝트 삭제 시간
+    float fKillObjTime = 6.0f;  //오브젝트 삭제 시간
 
     //밤송이의 궤적을 시각적 표현을 위해 LineRenderer를 사용함
     LineRenderer lineRenderer = null;
@@ -26,31 +26,22 @@ public class BamsongiController : MonoBehaviour
     {
         gTarget = GameObject.Find("Target");                //과녁 오브젝트 불러오기
         boxCollider = gTarget.GetComponent<BoxCollider>();  //과녁 오브젝트의 BoxCollider 기능 불러오기
-        lineRenderer = GetComponent<LineRenderer>();
+        
+        lineRenderer = GetComponent<LineRenderer>();    //LineRenderer 기능 가져오기
         lineRenderer.positionCount = 0;
     }
 
     private void FixedUpdate()
     {
-        //Rigidbody가 움직이는 동안의 위치를 궤적으로 그림
-        if (!GetComponent<Rigidbody>().isKinematic)
-        {
-            trajectoryPoint.Add(transform.position);
-
-            lineRenderer.positionCount = trajectoryPoint.Count;
-            lineRenderer.SetPositions(trajectoryPoint.ToArray());
-        }
+        f_RenderTrajectory(); //화면상에 궤적 그리기
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        //밤송이가 화면 아래로 낙하시 삭제
-        if (transform.position.y < -3.0f)
-        {
-            Destroy(gameObject); 
-        }
+        //과녁에 맞지 않고 지면아래로 낙하시 오브젝트를 삭제함
+        f_CheckFallAndDestroy();
     }
 
     /*
@@ -77,7 +68,12 @@ public class BamsongiController : MonoBehaviour
          */
         GetComponent<Rigidbody>().isKinematic = true;
         GetComponent<ParticleSystem>().Play(); //파티클 재생
+        f_ApplyScoreAndDestroy(collision); //점수 계산 및 업데이트 후 오브젝트 삭제
+    }
 
+    /// <summary>충돌시 점수를 계산하고 오브젝트를 없애는 메소드</summary>
+    void f_ApplyScoreAndDestroy(Collision collision)
+    {
         if (boxCollider == null) //BoxCollider가 없는 경우
         {
             Debug.LogWarning($"{gTarget.gameObject.name}에 BoxCollider가 없습니다.");
@@ -103,6 +99,32 @@ public class BamsongiController : MonoBehaviour
         UIManager.Instance.f_UpdateScore(); //점수 UI 갱신
         UIManager.Instance.f_UpdateTotalScore(); //총점 UI 갱신
 
-        Destroy(gameObject, fKillObjTime); //3초뒤 삭제
+        CameraManager.Instance.f_MoveCameraRoutine();
+
+        Destroy(gameObject, fKillObjTime);
+    }
+
+    /// <summary>RigidBody의 궤적을 실시간으로 기록하고 그리는 메소드</summary>
+    void f_RenderTrajectory()
+    {
+        //Rigidbody가 움직이는 동안의 위치를 궤적으로 그림
+        if (!GetComponent<Rigidbody>().isKinematic) //물리가 적용될 경우 아래 코드 실행
+        {
+            trajectoryPoint.Add(transform.position); //현재 위치를 리스트에 기록함
+
+            //리스트 갯수만큼 lineRenderer가 몇 개의 점을 그릴지 할당
+            lineRenderer.positionCount = trajectoryPoint.Count;
+            //SetPositions 메소드를 사용해서 Vector3 배열을 LineRenderer가 화면상에 그린다.
+            lineRenderer.SetPositions(trajectoryPoint.ToArray()); 
+        }
+    }
+
+    /// <summary>밤송이가 화면 아래로 낙하시 삭제하는 메소드</summary>
+    void f_CheckFallAndDestroy()
+    {
+        if (transform.position.y < -3.0f) //지면 아래로 낙하시 
+        {
+            Destroy(gameObject);
+        }
     }
 }
