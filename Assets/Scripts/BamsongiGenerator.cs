@@ -11,8 +11,12 @@ public class BamsongiGenerator : MonoBehaviour
     float fChargingTime = 0.0f;     //게이지의 좌,우 움직임을 위한 시간 필드
     float fGaugeSpeed = 1.5f;       //게이지의 좌, 우 움직임 속도
     float fGaugeValue = 0.0f;       //게이지 UI의 FillAmount에 연산된 값을 주기 위한 필드
-    float fGaugeMaxValue = 1.0f;    //게이지의 최대값
-    float fGaugeLastValue = 0.0f;   //게이지의 마지막 값 
+    float fGaugeMaxValue = 1.0f;    //게이지의 최대값 필드
+    float fGaugeLastValue = 0.0f;   //게이지의 마지막 값 필드
+    float fThrowStrength = 0.0f;    //밤송이를 던지는 힘 필드
+
+    [SerializeField] private float fMinThrowStrength = 300.0f;
+    [SerializeField] private float fGaugePowerMultiplier = 1500.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -78,9 +82,9 @@ public class BamsongiGenerator : MonoBehaviour
         Ray ScreenPointToRayBamsongi = Camera.main.ScreenPointToRay(Input.mousePosition);
         vBamsongiWorldDir = ScreenPointToRayBamsongi.direction;
 
-        float fShootPower = 500.0f + 1200.0f * fGaugeLastValue;
+        fThrowStrength = fMinThrowStrength + fGaugeLastValue * fGaugePowerMultiplier;
 
-        insBamsongiPrefab.GetComponent<BamsongiController>().f_TargetShoot(vBamsongiWorldDir.normalized * fShootPower);
+        insBamsongiPrefab.GetComponent<BamsongiController>().f_TargetShoot(vBamsongiWorldDir.normalized * fThrowStrength);
 
         UIManager.Instance.f_SetGaugeAmount(0.0f);
         UIManager.Instance.f_ActivePowerGauge(false);
