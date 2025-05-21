@@ -13,9 +13,8 @@ public class UIManager : MonoBehaviour
     private static UIManager _instance = null;
 
     /* 아래와 같은 코드로 변경 예정 */
-    
-    [SerializeField] private GameObject InsGauge = null;
-    private UnityEngine.UI.Image insPowerFill = null;
+    //[SerializeField] private GameObject InsGauge = null;
+    //private UnityEngine.UI.Image insPowerFill = null;
 
     public float GaugeFillAmount //FillAmount Read-Only 프로퍼티
     {
