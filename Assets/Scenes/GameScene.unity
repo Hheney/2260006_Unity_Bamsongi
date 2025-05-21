@@ -1798,6 +1798,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gBamsongiPrefab: {fileID: 3032954721385831817, guid: acdb85a25ac194a479e16d271d957754, type: 3}
+  fMinThrowStrength: 0
+  fGaugePowerMultiplier: 0
 --- !u!4 &958304004
 Transform:
   m_ObjectHideFlags: 0
@@ -2467,6 +2469,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textScore: {fileID: 1080659823}
   textTotalScore: {fileID: 322924522}
+  InsGauge: {fileID: 0}
 --- !u!4 &1349719955
 Transform:
   m_ObjectHideFlags: 0
@@ -3649,12 +3652,12 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 958304004}
   - {fileID: 1352428030}
   - {fileID: 668642318}
   - {fileID: 845191683}
   - {fileID: 261734270}
   - {fileID: 132339628}
+  - {fileID: 958304004}
   - {fileID: 1197540253}
   - {fileID: 133469889}
   - {fileID: 1349719955}
