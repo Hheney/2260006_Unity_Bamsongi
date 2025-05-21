@@ -49,12 +49,14 @@ public class CameraManager : MonoBehaviour
     {
         
     }
-
+    //Coroutine : 일시 중단이 가능한 메소드, 여러 프레임에 걸쳐 작업을 나눠서 처리할 수 있도록 해주는 기능을 수행함
     public void f_MoveCameraRoutine()
     {
-        StartCoroutine(CameraMoveSequence());
+        StartCoroutine(CameraMoveSequence()); //CameraMoveSequence 실행
     }
 
+    //IEnumerator : C#의 인터페이스로, 반복 가능한 구조(Enumerable)를 반환
+    //기본적으로 Unity는 yield 문 다음에 프레임에 코루틴을 다시 시작한다
     private IEnumerator CameraMoveSequence()
     {
         f_SetCameraPriority(camZoomTarget); //줌 카메라 활성화

@@ -15,7 +15,7 @@ public class BamsongiController : MonoBehaviour
 
     float fDistance = 0.0f;     //밤송이 타격지점과, 원의 중심까지의 거리
     float fMaxRadius = 0.0f;    //과녁의 크기
-    float fKillObjTime = 6.0f;  //오브젝트 삭제 시간
+    float fKillObjTime = 7.0f;  //오브젝트 삭제 시간
 
     //밤송이의 궤적을 시각적 표현을 위해 LineRenderer를 사용함
     LineRenderer lineRenderer = null;
