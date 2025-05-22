@@ -27,6 +27,11 @@ public class BamsongiGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(!GameManager.Instance.CanShoot /*|| !CameraManager.Instance.IsCameraReady*/) //CanShoot이 false값이면 return 시켜 마우스 동작을 금지시킴
+        {
+            return;
+        }
+
         //마우스 좌클릭을 시작하면 게이지 충전 시작
         if (Input.GetMouseButtonDown(0))
         {

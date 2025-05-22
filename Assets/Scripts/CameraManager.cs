@@ -10,7 +10,27 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private CinemachineCamera camZoomTarget = null;    //줌 카메라
     [SerializeField] private CinemachineCamera camTrajectory = null;    //궤적 카메라
 
-    float fWaitTime = 2.0f;
+    int nDefaultPriority = 10;  //기본 우선순위
+    int nActivePriority = 20;   //활성화 우선순위
+
+    private float fWaitTime = 2.0f;
+
+    //------------------------[발사 금지 기능 구현]------------------------
+    [SerializeField] private CinemachineBrain cinemachineBrain = null; //Blend 여부를 확인하기 위한 CinemachineBrain 컴포넌트를 불러오기 위함
+
+    //델리게이트(delegate): 블렌드 완료 시 호출될 메소드 형식 정의
+    public delegate void CameraBlendCompleteDelegate();
+    
+    //이벤트(event): 외부에서 구독할 수 있는 이벤트
+    public event CameraBlendCompleteDelegate OnCameraBlendComplete;
+
+    /// <summary>현재 카메라가 블렌드 상태가 아닌지 여부를 반환하는 프로퍼티</summary>
+    public bool IsCameraReady
+    {
+        //기본 카메라가 활성화 상태 && cinemachineBrain가 null이 아님 && Blend 상태가 아닐 경우 IsCameraReady "true" 값 리턴
+        get { return camDefault.Priority == 20 && cinemachineBrain != null && !cinemachineBrain.IsBlending; }
+    }
+    //------------------------[발사 금지 기능 구현]------------------------
 
     public static CameraManager Instance
     {
@@ -41,7 +61,16 @@ public class CameraManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        GameObject gCamera = GameObject.Find("Main Camera"); //메인 카메라 오브젝트 불러오기
+
+        if(gCamera != null)
+        {
+            cinemachineBrain = gCamera.GetComponent<CinemachineBrain>(); //CinemachineBrain 기능 가져오기
+        }
+        else
+        {
+            Debug.LogWarning("Main Camera 오브젝트를 찾을 수 없습니다.");
+        }
     }
 
     // Update is called once per frame
@@ -49,21 +78,21 @@ public class CameraManager : MonoBehaviour
     {
         
     }
-    //Coroutine : 일시 중단이 가능한 메소드, 여러 프레임에 걸쳐 작업을 나눠서 처리할 수 있도록 해주는 기능을 수행함
+
+    /// <summary>카메라 연출 시퀀스를 코루틴으로 실행하는 메소드</summary>
     public void f_MoveCameraRoutine()
     {
+        //Coroutine : 일시 중단이 가능한 메소드, 여러 프레임에 걸쳐 작업을 나눠서 처리할 수 있도록 해주는 기능을 수행함
         StartCoroutine(CameraMoveSequence()); //CameraMoveSequence 실행
     }
 
-    //IEnumerator : C#의 인터페이스로, 반복 가능한 구조(Enumerable)를 반환
-    //기본적으로 Unity는 yield 문 다음에 프레임에 코루틴을 다시 시작한다
+    /// <summary>카메라 시퀀스 연출 후 이벤트를 명시적으로 호출</summary>
     private IEnumerator CameraMoveSequence()
     {
-        //Blend가 끝나지 않은걸 확인하지 못하면 Priority는 변
-        //중복 클릭과 클릭방지를 위해서 Blend 여부 판단 추가해야함
-        //GameManager에서는 판단을 위한 Bool 필드를 get set으로 참조
-        //BamsongiController 클래스내 전역변수로 CanClick 메소드를 생성하여 bool변수를 변동시킬 수 있도록 해야함
-
+        /*
+         * IEnumerator : C#의 인터페이스로, 반복 가능한 구조(Enumerable)를 반환
+         * 기본적으로 Unity는 yield 문 다음에 프레임에 코루틴을 다시 시작한다
+         */
         f_SetCameraPriority(camZoomTarget); //줌 카메라 활성화
         yield return new WaitForSeconds(fWaitTime);
 
@@ -71,14 +100,25 @@ public class CameraManager : MonoBehaviour
         yield return new WaitForSeconds(fWaitTime);
 
         f_SetCameraPriority(camDefault); //기본 카메라 활성화
+
+        //------------------------[발사 금지 기능 구현]------------------------
+        yield return new WaitForSeconds(0.5f); //확실한 Blend 조건을 위해 0.5초 추가 대기
+
+        //event는 아무도 구독하지 않으면 null 상태임, null 체크를 하지 않고 Invoke() 하면 예외가 발생함
+        if (OnCameraBlendComplete != null) //따라서 null 체크를 진행함
+        {
+            OnCameraBlendComplete.Invoke(); //외부 구독자에게 Blend 완료를 알림
+        }
+        //------------------------[발사 금지 기능 구현]------------------------
     }
 
+    /// <summary>모든 카메라의 우선순위를 리셋하고 주어진 카메라만 활성화하는 메소드</summary>
     private void f_SetCameraPriority(CinemachineCamera camera)
     {
-        camDefault.Priority = 10;       //기본 카메라 우선순위 기본상태로 변경
-        camZoomTarget.Priority = 10;    //줌 카메라 우선순위 기본상태로 변경
-        camTrajectory.Priority = 10;    //궤적 카메라 우선순위 기본상태로 변경
+        camDefault.Priority = nDefaultPriority;       //기본 카메라 우선순위 기본상태로 변경
+        camZoomTarget.Priority = nDefaultPriority;    //줌 카메라 우선순위 기본상태로 변경
+        camTrajectory.Priority = nDefaultPriority;    //궤적 카메라 우선순위 기본상태로 변경
 
-        camera.Priority = 20;   //매개변수 카메라 최우선순위 변경 및 활성화
+        camera.Priority = nActivePriority;   //매개변수 카메라 최우선순위 변경 및 활성화
     }
 }
