@@ -15,7 +15,7 @@ public class BamsongiController : MonoBehaviour
 
     float fDistance = 0.0f;     //밤송이 타격지점과, 원의 중심까지의 거리
     float fMaxRadius = 0.0f;    //과녁의 크기
-    float fKillObjTime = 7.0f;  //오브젝트 삭제 시간
+    //float fKillObjTime = 7.0f;  //오브젝트 삭제 시간
 
     //밤송이의 궤적을 시각적 표현을 위해 LineRenderer를 사용함
     LineRenderer lineRenderer = null;
@@ -99,9 +99,21 @@ public class BamsongiController : MonoBehaviour
         UIManager.Instance.f_UpdateScore(); //점수 UI 갱신
         UIManager.Instance.f_UpdateTotalScore(); //총점 UI 갱신
 
-        CameraManager.Instance.f_MoveCameraRoutine();
+        GameManager.Instance.CanShoot = false; //밤송이 발사 제한
 
-        Destroy(gameObject, fKillObjTime);
+        CameraManager.Instance.f_MoveCameraRoutine(); //카메라 연출 시작
+
+        //Destroy(gameObject, fKillObjTime); //fKillObjTime 만큼 대기후 오브젝트 삭제
+
+        CameraManager.Instance.OnCameraBlendComplete += f_DestroyBamsongiAfterBlend; //Bland가 끝났음을 알리는 이벤트 발생시 밤송이 삭제
+    }
+
+    private void f_DestroyBamsongiAfterBlend()
+    {
+        Destroy(gameObject); //오브젝트 삭제
+
+        //메모리 누수 방지 "-=" 호출 후 이벤트에서 제거
+        CameraManager.Instance.OnCameraBlendComplete -= f_DestroyBamsongiAfterBlend;
     }
 
     /// <summary>RigidBody의 궤적을 실시간으로 기록하고 그리는 메소드</summary>

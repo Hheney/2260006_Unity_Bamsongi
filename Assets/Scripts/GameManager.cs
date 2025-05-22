@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement; //씬을 전환하기 위한 씬매니저 임포트
 using UnityEngine.SocialPlatforms.Impl;
@@ -25,6 +26,14 @@ public class GameManager : MonoBehaviour
     //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
     public int TotalScore { get { return nTotalScore; } }
     public int Score { get { return nScore; } }
+
+    //------------------------[발사 금지 기능 구현]------------------------
+    //private 필드
+    private bool isCanShoot = false;
+
+    //프로퍼티
+    public bool CanShoot { get { return isCanShoot; } set { isCanShoot = value; } }
+    //------------------------[발사 금지 기능 구현]------------------------
 
     public static GameManager Instance
     {
@@ -58,6 +67,12 @@ public class GameManager : MonoBehaviour
     {
         //디바이스 성능에 따른 실행결과 차이 없애기
         Application.targetFrameRate = 60;
+
+        //------------------------[발사 금지 기능 구현]------------------------
+        CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete;
+
+        StartCoroutine(f_EnableFirstShoot()); //버그 방지를 위해 시작시 0.5초 대기후 발사 가능하도록 함
+        //------------------------[발사 금지 기능 구현]------------------------
     }
 
     // Update is called once per frame
@@ -65,6 +80,36 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    //------------------------[발사 금지 기능 구현]------------------------
+    /// <summary> Blend가 종료되면 발사를 허용하는 메소드 </summary>
+    private void f_OnBlendComplete()
+    {
+        /*
+        if (CameraManager.Instance.IsCameraReady) //Blend가 끝나고 카메라가 기본 카메라로 변경된 경우
+        {
+            isCanShoot = true; //발사 허용
+        }*/
+        StartCoroutine(f_WaitUntilCameraReadyThenAllowShoot());
+    }
+
+    private IEnumerator f_WaitUntilCameraReadyThenAllowShoot()
+    {
+        while (!CameraManager.Instance.IsCameraReady)
+        {
+            yield return null; //1프레임 대기
+        }
+
+        isCanShoot = true;
+    }
+
+    private IEnumerator f_EnableFirstShoot()
+    {
+        yield return new WaitForSeconds(0.5f);
+        
+        isCanShoot = true; //isCanShoot의 기본상태는 false이므로 처음이면 true로 변경해야함
+    }
+    //------------------------[발사 금지 기능 구현]------------------------
 
     /*
      * 유니티에서 씬을 로드하는 것은 SceneManger.LoadScene() 메소드를 사용
