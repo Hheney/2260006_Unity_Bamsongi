@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor.Overlays;
 using UnityEngine;
+using System.Security.Cryptography; //AES 암호화를 위해 사용
 
 /*
  * 직렬화(Serialization)

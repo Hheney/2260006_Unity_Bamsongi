@@ -59,6 +59,11 @@ public class CameraManager : MonoBehaviour
     //기본적으로 Unity는 yield 문 다음에 프레임에 코루틴을 다시 시작한다
     private IEnumerator CameraMoveSequence()
     {
+        //Blend가 끝나지 않은걸 확인하지 못하면 Priority는 변
+        //중복 클릭과 클릭방지를 위해서 Blend 여부 판단 추가해야함
+        //GameManager에서는 판단을 위한 Bool 필드를 get set으로 참조
+        //BamsongiController 클래스내 전역변수로 CanClick 메소드를 생성하여 bool변수를 변동시킬 수 있도록 해야함
+
         f_SetCameraPriority(camZoomTarget); //줌 카메라 활성화
         yield return new WaitForSeconds(fWaitTime);
 
