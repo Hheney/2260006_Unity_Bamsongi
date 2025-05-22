@@ -21,30 +21,36 @@ public class BamsongiGenerator : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetMouseButtonDown(0)) //마우스 좌클릭시
+        if(!GameManager.Instance.CanShoot /*|| !CameraManager.Instance.IsCameraReady*/) //CanShoot이 false값이면 return 시켜 마우스 동작을 금지시킴
+        {
+            return;
+        }
+
+        //마우스 좌클릭을 시작하면 게이지 충전 시작
+        if (Input.GetMouseButtonDown(0))
         {
             f_StartChargeGauge();
         }
 
-        if(Input.GetMouseButton(0) && isCharging) //마우스 좌클릭중 && 게이지 차징중 
+        //마우스 클릭 유지 중이면 충전 게이지 업데이트
+        if (Input.GetMouseButton(0) && isCharging) 
         {
             f_UpdateChargeGauge();
         }
 
-        if(Input.GetMouseButtonUp(0) && isCharging) //마우스를 뗄 경우
+        //마우스 클릭 해제 시 밤송이를 발사
+        if (Input.GetMouseButtonUp(0) && isCharging) //마우스를 뗄 경우
         {
             f_ReleaseGaugeAndShoot();
         }
-
     }
 
-    
     void f_StartChargeGauge()
     {
         isCharging = true;
@@ -65,6 +71,7 @@ public class BamsongiGenerator : MonoBehaviour
     {
         isCharging = false;
 
+        //게이지 최종값에 게이지 값 저장
         fGaugeLastValue = UIManager.Instance.GaugeFillAmount;
 
         //게임을 실행하는 도중에 밤송이 오브젝트를 생성
@@ -82,10 +89,13 @@ public class BamsongiGenerator : MonoBehaviour
         Ray ScreenPointToRayBamsongi = Camera.main.ScreenPointToRay(Input.mousePosition);
         vBamsongiWorldDir = ScreenPointToRayBamsongi.direction;
 
+        //밤송이를 발사할 힘을 연산
         fThrowStrength = fMinThrowStrength + fGaugeLastValue * fGaugePowerMultiplier;
 
+        //밤송이에 힘을 전달하는 메소드에 연산한 힘 전달
         insBamsongiPrefab.GetComponent<BamsongiController>().f_TargetShoot(vBamsongiWorldDir.normalized * fThrowStrength);
 
+        //게이지 UI 초기화
         UIManager.Instance.f_SetGaugeAmount(0.0f);
         UIManager.Instance.f_ActivePowerGauge(false);
     }
