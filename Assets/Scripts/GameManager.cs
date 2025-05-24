@@ -15,7 +15,9 @@ public enum SceneName
        ClearScene  //≈¨∏ÆæÓ æ¿
      */
 
-    GameScene //∞‘¿” æ¿
+    GameScene, //∞‘¿” æ¿
+    MenuScene, //∏ﬁ¥∫ æ¿
+    TitleScene, //≈∏¿Ã∆≤ æ¿
 }
 
 public class GameManager : MonoBehaviour

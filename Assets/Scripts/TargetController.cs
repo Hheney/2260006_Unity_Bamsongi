@@ -36,7 +36,7 @@ public class TargetController : MonoBehaviour
     }
 
     /// <summary>과녁을 세우는 메소드</summary>
-    public void f_StandUpTarget()
+    public void f_StandUpTarget(float speedMultiplier = 1.0f)
     {
         if(isTargetStaning == true)
         {
@@ -44,7 +44,7 @@ public class TargetController : MonoBehaviour
         }
 
         isTargetStaning = true;
-        StartCoroutine(f_RotateTargetRoutine(vStandingRotation)); //vStandingRotation 벡터값으로 루틴 실행, 과녁이 일어선다.
+        StartCoroutine(f_RotateTargetRoutine(vStandingRotation, speedMultiplier)); //vStandingRotation 벡터값으로 루틴 실행, 과녁이 일어선다.
     }
 
     /// <summary>과녁을 눕히는 메소드</summary>
@@ -66,13 +66,13 @@ public class TargetController : MonoBehaviour
     }
 
     //공통된 기능인 각도변화 기능은 열거자 루틴으로 기능 통합
-    private IEnumerator f_RotateTargetRoutine(Vector3 vTargetEuler)
+    private IEnumerator f_RotateTargetRoutine(Vector3 vTargetEuler, float speedMultiplier = 1.0f)
     {
         Quaternion targetRotation = Quaternion.Euler(vTargetEuler);
         
         while (Quaternion.Angle(targetVisual.rotation, targetRotation) > 0.5f)
         {
-            targetVisual.rotation = Quaternion.RotateTowards(targetVisual.rotation, targetRotation, fRotateSpeed * Time.deltaTime);
+            targetVisual.rotation = Quaternion.RotateTowards(targetVisual.rotation, targetRotation, fRotateSpeed * Time.deltaTime * speedMultiplier);
 
             yield return null;
         }

@@ -14,6 +14,9 @@ public class TargetManager : MonoBehaviour
      */
     [SerializeField] private List<TargetController> listTargets = new List<TargetController>();
     [SerializeField] private float fInterval = 3.0f;    //과녁을 세우고 눕히는 간격
+    [SerializeField] private float fMinInterval = 0.3f; //과녁을 세우고 눕히는 최소 간격
+    [SerializeField] private float fDecreaseRate = 0.5f;//과녁을 세우고 눕히는 간격 감소율
+    [SerializeField] private float fSpeedGrowthRate = 0.1f;//과녁의 속도 증가율
 
     //활성화된 과녁의 Box Collider 활성화 상태를 변경하기 위함
     private TargetController currentActiveTarget = null;
@@ -25,6 +28,9 @@ public class TargetManager : MonoBehaviour
      * -1인 이유는 사용할 위치가 List 자료형을 사용하므로 Index는 0부터 시작하기에 초기화는 0이 아니라 -1이여야 함
      */
     int nPreviousIndex = -1;
+
+    private float currentInterval;
+    private float currentSpeedMultiplier;
 
     private void Awake()
     {
@@ -43,6 +49,8 @@ public class TargetManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        currentInterval = fInterval;    //초기 간격 설정
+        currentSpeedMultiplier = 1.0f;  //초기 속도 배율 설정
         StartCoroutine(f_ActiveRandomTargetRoutine()); //랜덤 타겟 루틴 활성화
     }
 
@@ -77,25 +85,37 @@ public class TargetManager : MonoBehaviour
                 currentActiveTarget.f_LieDownTarget(); //과녁 눕히기
             }
 
-            //--------------------------------[중복추첨 방지 기능]--------------------------------
-            nNewIndex = nPreviousIndex; //이전 값 저장
-
-            //새 인덱스 값이 이전 값과 같으면 while 반복
-            while (nNewIndex == nPreviousIndex && listTargets.Count > 1) //listTargets.Count > 1 : 과녁이 1개일 경우 무한루프 발생 방지
+            do
             {
-                nNewIndex = Random.Range(0, listTargets.Count); //0부터 리스트 갯수(과녁 수)만큼의 범위에서 랜덤값 추출
-            }
+                nNewIndex = Random.Range(0, listTargets.Count);
+            } while (nNewIndex == nPreviousIndex && listTargets.Count > 1); //중복 추첨 방지
 
-            nPreviousIndex = nNewIndex; //새로운 값 저장
+            nPreviousIndex = nNewIndex;
+
+            //--------------------------------[중복추첨 방지 기능]--------------------------------
+            //nNewIndex = nPreviousIndex; //이전 값 저장
+
+            ////새 인덱스 값이 이전 값과 같으면 while 반복
+            //while (nNewIndex == nPreviousIndex && listTargets.Count > 1) //listTargets.Count > 1 : 과녁이 1개일 경우 무한루프 발생 방지
+            //{
+            //    nNewIndex = Random.Range(0, listTargets.Count); //0부터 리스트 갯수(과녁 수)만큼의 범위에서 랜덤값 추출
+            //}
+
+            //nPreviousIndex = nNewIndex; //새로운 값 저장
 
             //아이템등의 요소가 등장한다면 Range 기반 랜덤방식보다 가중치 기반 방식으로 변경하여, 특정 조건에서 특정 과녁이 등장 확률을 조절할 수 있도록 확장 가능
             //--------------------------------[중복추첨 방지 기능]--------------------------------
 
+            Debug.Log($"{nNewIndex + 1}번 타겟");
+            Debug.Log($"간격: {currentInterval:F2} / 회전 배율: {currentSpeedMultiplier:F2}");
 
             currentActiveTarget = listTargets[nNewIndex];
-            currentActiveTarget.f_StandUpTarget(); //추출된 인덱스값을 가진 타겟 세우기
+            currentActiveTarget.f_StandUpTarget(currentSpeedMultiplier); //추출된 인덱스값을 가진 타겟 세우기
 
-            yield return new WaitForSeconds(fInterval); //세우고 눕히는 간격(Interval)만큼 대기
+            yield return new WaitForSeconds(currentInterval); //세우고 눕히는 간격(Interval)만큼 대기
+
+            currentInterval = Mathf.Max(fMinInterval, currentInterval - fDecreaseRate); //간격 감소, 최소 간격(fMinInterval)보다 작아지지 않도록 설정
+            currentSpeedMultiplier += fSpeedGrowthRate;
         }
     }
 
