@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class BamsongiController : MonoBehaviour
 {
-    GameObject gTarget = null; //과녁 오브젝트 오브젝트 변수
+    GameObject gActiveTarget = null; //활성화 오브젝트 변수
+    GameObject gTarget = null; //과녁 오브젝트 변수
     BoxCollider boxCollider = null; //과녁의 Box Collider 값을 가져오기 위함
 
     Vector2 vHitXY = Vector2.zero;      //거리 계산을 위한 밤송이의 타격점 X, Y좌표값 벡터
@@ -24,7 +25,15 @@ public class BamsongiController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        gTarget = GameObject.Find("Target");                //과녁 오브젝트 불러오기
+        //gTarget = GameObject.Find("Target"); //과녁 오브젝트 불러오기
+
+        /*
+         * FindAnyObjectByType : Unity 2023부터 도입된 최신 API, GameObject.Find()보다 안전하고 명확한 방식
+         * GameObject.Find()는 문자열로 찾아오기 때문에 오타의 가능성이 존재하지만, 제네릭 기반으로 타입을 직접 찾기 때문에 오타 없이 안전함
+         * 컴포넌트 타입만 지정하면 되므로 간결하고 직관적인 방식
+         */
+        gTarget = FindAnyObjectByType<TargetManager>().f_GetCurrentTarget(); //현재 활성화된 과녁 오브젝트 불러오기
+        
         boxCollider = gTarget.GetComponent<BoxCollider>();  //과녁 오브젝트의 BoxCollider 기능 불러오기
         
         lineRenderer = GetComponent<LineRenderer>();    //LineRenderer 기능 가져오기
@@ -61,6 +70,19 @@ public class BamsongiController : MonoBehaviour
     //Physics를 사용하므로 과녁과 밤송이가 충돌하면 OnCollisionEnter 메소드가 호출되어 실행됨
     private void OnCollisionEnter(Collision collision)
     {
+        if(TargetManager.Instance != null && TargetManager.Instance.ActiveTarget !=null)
+        {
+            gActiveTarget = TargetManager.Instance.ActiveTarget.gameObject;
+        }
+
+        if (collision.gameObject != gActiveTarget) //비활성 과녁에 맞을경우 점수계산을 하지 않도록 return
+        {
+            Debug.LogWarning("비활성 과녁에 충돌하였습니다.");
+            return;
+        }
+
+        TargetManager.Instance.f_PauseTargetRoutine(); //밤송이가 과녁에 충돌시 과녁 루틴 일시정지 
+
         /*
          * 밤송이가 과녁에 닿는 순간 밤송이 움직임이 멈추므로, Rigidbody 컴포넌트의 isKinematic 메소드를 true로 설정
          * isKinematic 메소드를 true로 설정 하면, 오브젝트에 작용하는 힘을 무시하고 밤송이를 정지시킴
