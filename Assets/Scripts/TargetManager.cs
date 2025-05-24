@@ -80,12 +80,15 @@ public class TargetManager : MonoBehaviour
             //--------------------------------[중복추첨 방지 기능]--------------------------------
             nNewIndex = nPreviousIndex; //이전 값 저장
 
-            while(nNewIndex == nPreviousIndex && listTargets.Count > 1) //새 인덱스 값이 이전 값과 같으면 while 반복 
+            //새 인덱스 값이 이전 값과 같으면 while 반복
+            while (nNewIndex == nPreviousIndex && listTargets.Count > 1) //listTargets.Count > 1 : 과녁이 1개일 경우 무한루프 발생 방지
             {
                 nNewIndex = Random.Range(0, listTargets.Count); //0부터 리스트 갯수(과녁 수)만큼의 범위에서 랜덤값 추출
             }
 
             nPreviousIndex = nNewIndex; //새로운 값 저장
+
+            //아이템등의 요소가 등장한다면 Range 기반 랜덤방식보다 가중치 기반 방식으로 변경하여, 특정 조건에서 특정 과녁이 등장 확률을 조절할 수 있도록 확장 가능
             //--------------------------------[중복추첨 방지 기능]--------------------------------
 
 
