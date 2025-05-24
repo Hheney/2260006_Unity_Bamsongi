@@ -65,6 +65,7 @@ public class TargetController : MonoBehaviour
         StartCoroutine(f_RotateTargetRoutine(vLyingRotation)); //vLyingRotation 벡터값으로 루틴 실행, 과녁이 눕는다.
     }
 
+    //공통된 기능인 각도변화 기능은 열거자 루틴으로 기능 통합
     private IEnumerator f_RotateTargetRoutine(Vector3 vTargetEuler)
     {
         Quaternion targetRotation = Quaternion.Euler(vTargetEuler);
