@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement; //씬을 전환하기 위한 씬매니저 임포트
 using UnityEngine.SocialPlatforms.Impl;
 
+//SRP(단일 책임 원칙)을 위해 GameManager는 여러 매니저들을 연결, 제어하는 로직을 수행함
+
 //씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
 public enum SceneName
 {
@@ -69,7 +71,7 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 60;
 
         //------------------------[발사 금지 기능 구현]------------------------
-        CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete;
+        CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete; //카메라에서 발생시킨 Blend 종료 이벤트를 구독하기 위한 listener
 
         StartCoroutine(f_EnableFirstShoot()); //버그 방지를 위해 시작시 0.5초 대기후 발사 가능하도록 함
         //------------------------[발사 금지 기능 구현]------------------------
@@ -85,12 +87,9 @@ public class GameManager : MonoBehaviour
     /// <summary> Blend가 종료되면 발사를 허용하는 메소드 </summary>
     private void f_OnBlendComplete()
     {
-        /*
-        if (CameraManager.Instance.IsCameraReady) //Blend가 끝나고 카메라가 기본 카메라로 변경된 경우
-        {
-            isCanShoot = true; //발사 허용
-        }*/
         StartCoroutine(f_WaitUntilCameraReadyThenAllowShoot());
+        
+        TargetManager.Instance.f_ResumeTargetRoutine(); //카메라 연출 종료시, 과녁 랜덤 루틴 재개
     }
 
     private IEnumerator f_WaitUntilCameraReadyThenAllowShoot()
