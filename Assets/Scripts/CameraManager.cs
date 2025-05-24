@@ -10,8 +10,8 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private CinemachineCamera camZoomTarget = null;    //줌 카메라
     [SerializeField] private CinemachineCamera camTrajectory = null;    //궤적 카메라
 
-    int nDefaultPriority = 10;  //기본 우선순위
-    int nActivePriority = 20;   //활성화 우선순위
+    const int nDefaultPriority = 10;  //기본 우선순위
+    const int nActivePriority = 20;   //활성화 우선순위
 
     private float fWaitTime = 2.0f;
 
@@ -101,15 +101,14 @@ public class CameraManager : MonoBehaviour
 
         f_SetCameraPriority(camDefault); //기본 카메라 활성화
 
-        //------------------------[발사 금지 기능 구현]------------------------
-        yield return new WaitForSeconds(0.5f); //확실한 Blend 조건을 위해 0.5초 추가 대기
+        yield return new WaitUntil(() => IsCameraReady); //Blend가 완료될때까지 루틴 대기
+        yield return new WaitForSeconds(0.5f); //blend가 완료되었지만 카메라 원상복귀까지 0.5초가 추가로 필요함
 
         //event는 아무도 구독하지 않으면 null 상태임, null 체크를 하지 않고 Invoke() 하면 예외가 발생함
         if (OnCameraBlendComplete != null) //따라서 null 체크를 진행함
         {
             OnCameraBlendComplete.Invoke(); //외부 구독자에게 Blend 완료를 알림
         }
-        //------------------------[발사 금지 기능 구현]------------------------
     }
 
     /// <summary>모든 카메라의 우선순위를 리셋하고 주어진 카메라만 활성화하는 메소드</summary>
