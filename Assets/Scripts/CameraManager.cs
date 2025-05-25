@@ -10,10 +10,11 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private CinemachineCamera camZoomTarget = null;    //줌 카메라
     [SerializeField] private CinemachineCamera camTrajectory = null;    //궤적 카메라
 
+    [SerializeField] private Transform transDynamicTargetPoint = null;
+
     const int nDefaultPriority = 10;  //기본 우선순위
     const int nActivePriority = 20;   //활성화 우선순위
-
-    private float fWaitTime = 2.0f;
+    const float fWaitTime = 2.0f;     //카메라 전환간 대기시간
 
     //------------------------[발사 금지 기능 구현]------------------------
     [SerializeField] private CinemachineBrain cinemachineBrain = null; //Blend 여부를 확인하기 위한 CinemachineBrain 컴포넌트를 불러오기 위함
@@ -78,6 +79,54 @@ public class CameraManager : MonoBehaviour
     {
         
     }
+
+    private void LateUpdate()
+    {
+        /*
+         * LateUpdate()에서 메소드를 호출해야 하는 이유
+         * Unity의 생명주기에 따라 1.FixedUpdate(), 2.Update(), 3.LateUpdate() 순으로 호출됨
+         * Update에서 위치 이동, 위치 연산을 동시에 수행하면 카메라가 투명오브젝트(이동 구현)를 한 프레임 늦게 따라가게 됨
+         * 이런 경우에 플레이어 시점에선 카메라가 덜덜 떨리는 것 처럼 보이는 문제가 발생한다
+         * 따라서 생명주기에 따라 Update() 뒤에 호출되는 LateUpdate()에서 추적하도록 하면 문제가 해결된다.
+         */
+        f_UpdateDynamicTrackingTarget();
+    }
+
+    /// <summary> 현재 활성화된 과녁 앞 위치로 이동시키고 카메라가 추적하도록 설정하는 메소드 </summary>
+    private void f_UpdateDynamicTrackingTarget()
+    {
+        if (TargetManager.Instance == null || TargetManager.Instance.ActiveTarget == null)
+        {
+            return;
+        }
+
+        Transform tActiveTarget = TargetManager.Instance.ActiveTarget.transform;
+
+        Vector3 vForwardOffset = tActiveTarget.forward.normalized * 2.5f; //활성화된 과녁 전방 방향 기준 위치 계산
+
+        //x좌표는 과녁 그대로, z좌표값은 전방 2.5f만큼 앞에 위치하는 벡터값 생성
+        Vector3 vAdjustedPosition = new Vector3(
+            tActiveTarget.position.x,                         //정확한 과녁의 x값 위치
+            tActiveTarget.position.y + 1.0f,                  //약간 위쪽에서 내려다보게
+            tActiveTarget.position.z + vForwardOffset.z       //전방 방향 유지
+        );
+
+        //이동 및 회전
+        transDynamicTargetPoint.position = vAdjustedPosition;
+        transDynamicTargetPoint.LookAt(tActiveTarget);
+
+        if (camZoomTarget.Follow != transDynamicTargetPoint)
+        {
+            camZoomTarget.Follow = transDynamicTargetPoint;
+        }
+
+        if (camZoomTarget.LookAt != transDynamicTargetPoint)
+        {
+            camZoomTarget.LookAt = transDynamicTargetPoint;
+        }
+        
+    }
+
 
     /// <summary>카메라 연출 시퀀스를 코루틴으로 실행하는 메소드</summary>
     public void f_MoveCameraRoutine()
