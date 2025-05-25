@@ -25,8 +25,11 @@ public class GameManager : MonoBehaviour
     private int nScore = 0;      //플레이어의 점수
     private int nTotalScore = 0; //플레이어의 총 점수
     private bool isCanShoot = false; //private 필드
+    private int nRemainingShots = 10; //남은 기회 (초기값 10)
+
 
     //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
+    public int RemainingShots { get { return nRemainingShots; } }
     public int TotalScore { get { return nTotalScore; } }
     public int Score { get { return nScore; } }
 
@@ -67,8 +70,28 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 60;
         CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete; //카메라에서 발생시킨 Blend 종료 이벤트를 구독하기 위한 listener
         StartCoroutine(f_EnableFirstShoot());
+
+        UIManager.Instance.f_UpdateShotCount(); //남은 횟수 초기값 출력
     }
 
+    public void f_DecreaseShotCount()
+    {
+        nRemainingShots--;
+
+        UIManager.Instance.f_UpdateShotCount(); //남은 횟수 UI 갱신
+        Debug.Log($"남은 기회 : {nRemainingShots}");
+
+        if (nRemainingShots <= 0)
+        {
+            f_GameOver();
+        }
+    }
+
+    private void f_GameOver()
+    {
+        Debug.Log($"게임 오버, 총점 : {nTotalScore}");
+        
+    }
 
     /// <summary> 첫 시작 시 0.5초후 발사 허용 (버그 방지) </summary>
     private IEnumerator f_EnableFirstShoot()

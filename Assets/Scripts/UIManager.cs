@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    [SerializeField] private TMP_Text textShotCount; //남은 횟수 UI
     [SerializeField] private TMP_Text textScore; //점수 Text UI
     [SerializeField] private TMP_Text textTotalScore; //총점 Text UI
 
@@ -84,5 +85,12 @@ public class UIManager : MonoBehaviour
     {
         string sScore = $"Score : {GameManager.Instance.Score}";
         textScore.text = sScore;
+    }
+
+    /// <summary>남은 기회 수 UI 갱신 메소드</summary>
+    public void f_UpdateShotCount()
+    {
+        int nRemain = GameManager.Instance.RemainingShots;
+        textShotCount.text = $"RemainCount : {nRemain} / 10";
     }
 }
