@@ -52,7 +52,8 @@ public class BamsongiController : MonoBehaviour
         //랜덤 과녁 루틴 일시정지 및 충돌관련 처리
         TargetManager.Instance.f_PauseTargetRoutine();  
         GetComponent<Rigidbody>().isKinematic = true;   
-        GetComponent<ParticleSystem>().Play();          
+        GetComponent<ParticleSystem>().Play();
+        SoundManager.Instance.f_PlaySFX(SoundName.SFX_Crash, 1.0f);
         
         //BoxCollider의 Center 좌표값을 월드 좌표기준으로 변환
         BoxCollider boxCollider = activeTarget.GetComponent<BoxCollider>();

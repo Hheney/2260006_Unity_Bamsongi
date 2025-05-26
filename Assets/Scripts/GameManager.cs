@@ -7,6 +7,8 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public enum SceneName //씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
 {
+    MainMenuScene, //메인메뉴 씬
+    TitleScene, //타이틀 씬
     InitScene,  //초기화 전용 씬
     GameScene   //게임 씬
 }
@@ -30,6 +32,7 @@ public class GameManager : MonoBehaviour
     private int nTotalScore = 0;        //플레이어의 총 점수
     private int nRemainingShots = 10;   //남은 기회 (초기값 10)
     private bool isCanShoot = false;    //발사 가능 여부
+    private const int nClearScore = 50; //클리어 조건 점수
 
     //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
     public int Score { get { return nScore; } }
@@ -84,6 +87,21 @@ public class GameManager : MonoBehaviour
         {
             f_GameOver();
         }
+
+        if (nTotalScore >= nClearScore)
+        {
+            f_GameClear();
+        }
+    }
+
+    private void f_GameClear()
+    {
+        Debug.Log($"게임 클리어! 총점: {nTotalScore}");
+
+        TargetManager.Instance?.f_StopTargetRoutine();
+        TargetManager.Instance?.f_Reset();
+
+        //SoundManager.Instance?.f_PlaySFX(SoundName.SFX_GameClear, 1.0f);
     }
 
     private void f_GameOver()

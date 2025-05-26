@@ -51,6 +51,7 @@ public class BamsongiGenerator : MonoBehaviour
         //마우스 클릭 해제 시 밤송이를 발사
         if (Input.GetMouseButtonUp(0) && isCharging) //마우스를 뗄 경우
         {
+            SoundManager.Instance.f_PlaySFX(SoundName.SFX_PopSound, 1.0f); //밤송이 발사 효과음
             f_ReleaseGaugeAndShoot();
         }
     }

@@ -19,16 +19,16 @@ using System.Collections;
 public class ManagerLoader : MonoBehaviour
 {
     [Header("Manager Prefabs")]
-    [SerializeField] private GameObject gGameManager;      //GameManager 프리팹
-    [SerializeField] private GameObject gUIManager;        //UIManager 프리팹
-    [SerializeField] private GameObject gCameraManager;    //CameraManager 프리팹
-    [SerializeField] private GameObject gTargetManager;    //TargetManager 프리팹
-    [SerializeField] private GameObject gSoundManager;     //SoundManager 프리팹
+    [SerializeField] private GameObject gGameManager = null;      //GameManager 프리팹
+    [SerializeField] private GameObject gUIManager = null;        //UIManager 프리팹
+    [SerializeField] private GameObject gCameraManager = null;    //CameraManager 프리팹
+    [SerializeField] private GameObject gTargetManager = null;    //TargetManager 프리팹
+    [SerializeField] private GameObject gSoundManager = null;     //SoundManager 프리팹
 
     [Header("Loading UI")]
-    [SerializeField] private GameObject gLoadingPanel;     //로딩 화면 Panel
-    [SerializeField] private TMP_Text textLoading;         //로딩 텍스트
-    [SerializeField] private Slider sliderProgress;        //로딩 진행바
+    [SerializeField] private GameObject gLoadingPanel = null;     //로딩 화면 Panel
+    [SerializeField] private TMP_Text textLoading = null;         //로딩 텍스트
+    [SerializeField] private Slider sliderProgress = null;        //로딩 진행바
 
     private void Awake()
     {
@@ -40,6 +40,7 @@ public class ManagerLoader : MonoBehaviour
         //게임 시작 시 매니저들을 생성하고 씬을 로드함
         f_SpawnManagers();                      //매니저 프리팹들을 Instantiate
         StartCoroutine(f_LoadGameSceneAsync()); //GameScene 비동기 로드 + 초기화 루틴 실행
+        //StartCoroutine(f_LoadTitleSceneAsync());
     }
 
     /// <summary>Manager 프리팹을 한 번만 생성하는 메소드</summary>
@@ -113,7 +114,7 @@ public class ManagerLoader : MonoBehaviour
         yield return new WaitForEndOfFrame();
         yield return null;
 
-        //영향력 순서대로 초기화 (UI → Camera → Target → Game)
+        //영향력 적은 순서대로 초기화 (UI → Camera → Target → Game)
         UIManager.Instance?.f_Init();
 
         CameraManager.Instance?.f_Init();
@@ -124,6 +125,29 @@ public class ManagerLoader : MonoBehaviour
 
         GameManager.Instance?.f_Init(); 
 
-        //SoundManager.Instance?.f_AutoPlayBGM(); //배경음악 자동 재생
+        SoundManager.Instance?.f_AutoPlayBGM(); //배경음악 자동 재생
+    }
+
+    private IEnumerator f_LoadTitleSceneAsync()
+    {
+        gLoadingPanel.SetActive(true);
+
+        AsyncOperation asyncoperation = SceneManager.LoadSceneAsync("TitleScene");
+        asyncoperation.allowSceneActivation = false;
+
+        while (asyncoperation.progress < 0.9f)
+        {
+            sliderProgress.value = asyncoperation.progress;
+            textLoading.text = $"Loading... {asyncoperation.progress * 100:F0}%";
+            yield return null;
+        }
+
+        sliderProgress.value = 1.0f;
+        textLoading.text = "Loading Complete!";
+        yield return new WaitForSeconds(0.5f);
+
+        asyncoperation.allowSceneActivation = true;
+
+        yield return new WaitUntil(() => asyncoperation.isDone);
     }
 }
