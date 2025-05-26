@@ -1,41 +1,19 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement; //씬을 전환하기 위한 씬매니저 임포트
+using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 
-//SRP(단일 책임 원칙)을 위해 GameManager는 여러 매니저들을 연결, 제어하는 로직을 수행함
+//SRP(단일 책임 원칙)을 위해 GameManager는 여러 매니저들을 초기화, 연결, 제어하는 로직을 수행함
 
-//씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
-public enum SceneName
+public enum SceneName //씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
 {
-    //프로젝트 내 씬 구성창
-    /*
-     * 예시
-       ThirdStage, //스테이지3 씬
-       ClearScene  //클리어 씬
-     */
-
-    GameScene //게임 씬
+    InitScene,  //초기화 전용 씬
+    GameScene   //게임 씬
 }
 
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance = null;
-
-    private int nScore = 0;      //플레이어의 점수
-    private int nTotalScore = 0; //플레이어의 총 점수
-    private bool isCanShoot = false; //private 필드
-    private int nRemainingShots = 10; //남은 기회 (초기값 10)
-
-
-    //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
-    public int RemainingShots { get { return nRemainingShots; } }
-    public int TotalScore { get { return nTotalScore; } }
-    public int Score { get { return nScore; } }
-
-    //발사 가능 여부 프로퍼티
-    public bool CanShoot { get { return isCanShoot; } set { isCanShoot = value; } }
-
     public static GameManager Instance
     {
         get
@@ -48,37 +26,58 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private int nScore = 0;             //플레이어의 점수
+    private int nTotalScore = 0;        //플레이어의 총 점수
+    private int nRemainingShots = 10;   //남은 기회 (초기값 10)
+    private bool isCanShoot = false;    //발사 가능 여부
+
+    //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
+    public int Score { get { return nScore; } }
+    public int TotalScore { get { return nTotalScore; } }
+    public int RemainingShots { get { return nRemainingShots; } }
+
+    //발사 가능 여부 프로퍼티
+    public bool CanShoot { get { return isCanShoot; } set { isCanShoot = value; } }
+
     private void Awake()
     {
         if (_instance == null)
         {
-            _instance = this; //this : 현재 인스턴스를 가리키는 레퍼런스
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {
             Debug.Log("GameManager has another instance.");
-
-            Destroy(gameObject); //현재 인스턴스 파괴(GameManger Object)
+            Destroy(gameObject);
         }
-        DontDestroyOnLoad(gameObject); //씬이 변경되어도 현재 게임 오브젝트를 유지시키는 메소드
     }
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //디바이스 성능에 따른 실행결과 차이 없애기
-        Application.targetFrameRate = 60;
-        CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete; //카메라에서 발생시킨 Blend 종료 이벤트를 구독하기 위한 listener
-        StartCoroutine(f_EnableFirstShoot());
-
-        UIManager.Instance.f_UpdateShotCount(); //남은 횟수 초기값 출력
+        Application.targetFrameRate = 60; //디바이스 성능에 따른 실행결과 차이 없애기
     }
 
+    /// <summary> GameScene 진입 후에 명시적으로 호출할 초기화 메서드 </summary>
+    public void f_Init()
+    {
+        Application.targetFrameRate = 60;
+
+        f_ResetGameState();
+        UIManager.Instance?.f_UpdateShotCount();
+        CameraManager.Instance.OnCameraBlendComplete += f_OnBlendComplete;
+
+        StartCoroutine(f_EnableFirstShoot());
+    }
+
+    /// <summary>남은 기회를 차감하는 메소드</summary>
     public void f_DecreaseShotCount()
     {
         nRemainingShots--;
-
         UIManager.Instance.f_UpdateShotCount(); //남은 횟수 UI 갱신
+
         Debug.Log($"남은 기회 : {nRemainingShots}");
 
         if (nRemainingShots <= 0)
@@ -90,7 +89,14 @@ public class GameManager : MonoBehaviour
     private void f_GameOver()
     {
         Debug.Log($"게임 오버, 총점 : {nTotalScore}");
-        
+
+        TargetManager.Instance?.f_StopTargetRoutine(); //씬 전환전에 루틴은 필수적으로 종료되어야 함
+        TargetManager.Instance?.f_Reset();
+
+        //f_OpenScene(SceneName.GameScene);
+        //GameScene에서 GameScene 로드시 유니티의 고질적인 구조적 문제를 동반함(해결 불가)
+
+        f_OpenScene(SceneName.InitScene); //디버깅중에는 초기화 씬으로 이동해서 자동으로 다시 로드
     }
 
     /// <summary> 첫 시작 시 0.5초후 발사 허용 (버그 방지) </summary>
@@ -118,6 +124,7 @@ public class GameManager : MonoBehaviour
         TargetManager.Instance.f_ResumeTargetRoutine(); //Blend가 완전히 종료되면 과녁 루틴 재개
     }
 
+    
     /// <summary> 거리 기반으로 점수 계산 후 총점에 가산하는 메소드 </summary>
     public void f_AddScoreByDistance(float fDistance, float fMaxRadius)
     {
@@ -140,11 +147,10 @@ public class GameManager : MonoBehaviour
         else if (fDistance <= fStep * 6f) return 5;
         else return 0;
     }
-
+    
     /// <summary> 매개변수로 받은 씬으로 이동하는 메소드 </summary>
     public void f_OpenScene(SceneName sceneName)
     {
-        //SceneManager.LoadScene(SceneName);
         SceneManager.LoadScene(sceneName.ToString());
     }
 
@@ -177,10 +183,15 @@ public class GameManager : MonoBehaviour
     /// <summary> 활성화된 씬 네임을 불러오는 메소드 </summary>
     public string f_GetSceneName() //활성화된 씬 이름을 불러와서 씬에 맞는 BGM 재생을 자동화 하기위함
     {
-        string sSceneName = null;
+        return SceneManager.GetActiveScene().name;
+    }
 
-        sSceneName = SceneManager.GetActiveScene().name;
-
-        return sSceneName;
+    /// <summary>게임 점수 및 상태 초기화 전용 메소드</summary>
+    public void f_ResetGameState()
+    {
+        nScore = 0;
+        nTotalScore = 0;
+        nRemainingShots = 10;
+        isCanShoot = false;
     }
 }
