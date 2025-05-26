@@ -95,6 +95,8 @@ public class BamsongiController : MonoBehaviour
     {
         if (transform.position.y < -3.0f) //지면 아래로 낙하시 
         {
+            GameManager.Instance.f_DecreaseShotCount(); //기회 1회 차감
+            UIManager.Instance.f_UpdateTotalScore(); //UI 갱신
             Destroy(gameObject);
         }
     }
