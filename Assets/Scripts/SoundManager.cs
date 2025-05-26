@@ -75,6 +75,24 @@ public class AudioUnit
 /// <summary> 게임 전역에서 사운드를 관리하는 매니저 클래스 </summary>
 public class SoundManager : MonoBehaviour
 {
+    //singleton pattern: 클래스 하나에 인스턴스가 하나만 생성되는 프래그래밍 패턴
+    private static SoundManager _instance = null;
+    public static SoundManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                Debug.LogWarning("SoundManager is null.");
+            }
+            return _instance;
+        }
+    }
+
+    [Header("Audio Units")] //Inspector에서 리스트를 구분하기 위해 머릿말("Audio Units") 추가
+    [SerializeField] private List<AudioUnit> ListUnitBGM = new List<AudioUnit>(); //BGM 전용 AudioUnit 리스트
+    [SerializeField] private List<AudioUnit> ListUnitSFX = new List<AudioUnit>(); //SFX 전용 AudioUnit 리스트
+
     /// <summary> 씬 이름(Key)과 SoundName(Value)을 1:1 매핑하는 딕셔너리 </summary>
     private Dictionary<string, SoundName> BGMDict = new Dictionary<string, SoundName>()
     {
@@ -87,38 +105,25 @@ public class SoundManager : MonoBehaviour
         {"ClearScene", SoundName.BGM_MainMenu}      //클리어씬 BGM이 누락되어 임시로 MainMenu BGM 매핑
     };
 
-    [Header("Audio Units")] //Inspector에서 리스트를 구분하기 위해 머릿말("Audio Units") 추가
-    [SerializeField] private List<AudioUnit> ListUnitBGM = new List<AudioUnit>(); //BGM 전용 AudioUnit 리스트
-    [SerializeField] private List<AudioUnit> ListUnitSFX = new List<AudioUnit>(); //SFX 전용 AudioUnit 리스트
-
-    // singleton pattern: 클래스 하나에 인스턴스가 하나만 생성되는 프래그래밍 패턴
-    private static SoundManager _instance = null;
-
-    public static SoundManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                Debug.Log("SoundManager is null.");
-            }
-            return _instance;
-        }
-    }
-
     private void Awake()
     {
         if (_instance == null)
         {
-            _instance = this; //this : 현재 인스턴스를 가리키는 레퍼런스
+            _instance = this;
+            DontDestroyOnLoad(gameObject); // InitScene에서만 생성
         }
         else if (_instance != this)
         {
             Debug.Log("SoundManager has another instance.");
-
-            Destroy(gameObject); //현재 인스턴스 파괴(GameManger Object)
+            Destroy(gameObject);
         }
-        DontDestroyOnLoad(gameObject); //씬이 변경되어도 현재 게임 오브젝트를 유지시키는 메소드
+    }
+
+    /// <summary>런타임 초기화 함수 (기능 없음, 구조 통일 목적)</summary>
+    public void f_Init()
+    {
+        Debug.Log("SoundManager initialized.");
+        //TODO: 초기 볼륨 설정 및 볼륨 설정기능 초기화 부분
     }
 
     /*
