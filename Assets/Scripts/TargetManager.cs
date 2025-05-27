@@ -44,7 +44,7 @@ public class TargetManager : MonoBehaviour
      * -1인 이유는 사용할 위치가 List 자료형을 사용하므로 Index는 0부터 시작하기에 초기화는 0이 아니라 -1이여야 함
      */
     private int nPreviousIndex = -1;
-    private float fInterval = 3.0f; //과녁을 세우고 눕히는 간격
+    [SerializeField]private float fInterval = 3.0f; //과녁을 세우고 눕히는 간격
     public TargetController ActiveTarget {  get { return currentActiveTarget; } } //활성화된 과녁 Read-Only 프로퍼티
 
 
@@ -100,8 +100,23 @@ public class TargetManager : MonoBehaviour
         }
     }
 
+    //람다식 표현
     public void f_PauseTargetRoutine() => isPaused = true;
     public void f_ResumeTargetRoutine() => isPaused = false;
+
+    //일반식 표현
+    /*
+    public void f_PauseTargetRoutine()
+    {
+        isPaused = true;
+    }
+
+    // 타겟 움직임 루틴을 다시 시작합니다.
+    public void f_ResumeTargetRoutine()
+    {
+        isPaused = false;
+    }
+    */
 
     /// <summary>일정 시간마다 과녁 하나만 랜덤으로 일으키는 루틴</summary>
     private IEnumerator f_ActiveRandomTargetRoutine()
