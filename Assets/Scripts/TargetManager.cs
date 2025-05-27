@@ -44,7 +44,7 @@ public class TargetManager : MonoBehaviour
      * -1인 이유는 사용할 위치가 List 자료형을 사용하므로 Index는 0부터 시작하기에 초기화는 0이 아니라 -1이여야 함
      */
     private int nPreviousIndex = -1;
-    private float fInterval = 3.0f; //과녁을 세우고 눕히는 간격
+    private const float fInterval = 3.0f; //과녁을 세우고 눕히는 간격
     public TargetController ActiveTarget {  get { return currentActiveTarget; } } //활성화된 과녁 Read-Only 프로퍼티
 
 
@@ -106,7 +106,7 @@ public class TargetManager : MonoBehaviour
     /// <summary>일정 시간마다 과녁 하나만 랜덤으로 일으키는 루틴</summary>
     private IEnumerator f_ActiveRandomTargetRoutine()
     {
-        isRoutineRunning = true; //루틴이 실행중임을 알리는 플래스 활성화
+        isRoutineRunning = true; //루틴이 실행중임을 알리는 플래그 활성화
         int nNewIndex = 0;       //새 추첨 Index번호 지역 변수
 
         while (true)

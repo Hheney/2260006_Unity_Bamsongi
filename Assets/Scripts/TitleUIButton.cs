@@ -17,7 +17,7 @@ public class TitleUIButton : MonoBehaviour
     public void f_GameStart() //게임 시작 버튼
     {
         //SoundManager.Instance.f_PlaySFX(SoundName.SFX_ButtonClick, 0.7f); 
-        GameManager.Instance.f_OpenScene(SceneName.GameScene);
+        GameManager.Instance.f_OpenScene(SceneName.InitScene);
     }
 
     public void f_Exit()  //종료 버튼

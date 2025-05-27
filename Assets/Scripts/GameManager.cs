@@ -7,10 +7,11 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public enum SceneName //씬 이름을 직접입력하는 문자열 하드코딩을 줄여 씬 호출 오류방지를 위해 enum 사용
 {
-    MainMenuScene, //메인메뉴 씬
-    TitleScene, //타이틀 씬
     InitScene,  //초기화 전용 씬
-    GameScene   //게임 씬
+    TitleScene, //타이틀 씬
+    GameScene,   //게임 씬
+    ClearScene,  //클리어씬
+    GameOverScene //게임 오버 씬
 }
 
 public class GameManager : MonoBehaviour
@@ -32,7 +33,7 @@ public class GameManager : MonoBehaviour
     private int nTotalScore = 0;        //플레이어의 총 점수
     private int nRemainingShots = 10;   //남은 기회 (초기값 10)
     private bool isCanShoot = false;    //발사 가능 여부
-    private const int nClearScore = 50; //클리어 조건 점수
+    private const int nClearScore = 5; //클리어 조건 점수
 
     //읽기 전용 프로퍼티, 외부에서는 읽기만 가능
     public int Score { get { return nScore; } }
@@ -102,6 +103,8 @@ public class GameManager : MonoBehaviour
         TargetManager.Instance?.f_Reset();
 
         //SoundManager.Instance?.f_PlaySFX(SoundName.SFX_GameClear, 1.0f);
+
+        f_OpenScene(SceneName.ClearScene);
     }
 
     private void f_GameOver()
@@ -114,7 +117,8 @@ public class GameManager : MonoBehaviour
         //f_OpenScene(SceneName.GameScene);
         //GameScene에서 GameScene 로드시 유니티의 고질적인 구조적 문제를 동반함(해결 불가)
 
-        f_OpenScene(SceneName.InitScene); //디버깅중에는 초기화 씬으로 이동해서 자동으로 다시 로드
+        f_OpenScene(SceneName.GameOverScene);
+        //f_OpenScene(SceneName.InitScene); //디버깅중에는 초기화 씬으로 이동해서 자동으로 다시 로드
     }
 
     /// <summary> 첫 시작 시 0.5초후 발사 허용 (버그 방지) </summary>

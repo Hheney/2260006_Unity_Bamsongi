@@ -30,6 +30,8 @@ public class ManagerLoader : MonoBehaviour
     [SerializeField] private TMP_Text textLoading = null;         //로딩 텍스트
     [SerializeField] private Slider sliderProgress = null;        //로딩 진행바
 
+    private static bool isFirstLoad = true; //최초 실행 여부
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject); //최초 생성 시 파괴되지 않도록 설정(싱글톤)
@@ -37,10 +39,24 @@ public class ManagerLoader : MonoBehaviour
 
     private void Start()
     {
+        /*
         //게임 시작 시 매니저들을 생성하고 씬을 로드함
         f_SpawnManagers();                      //매니저 프리팹들을 Instantiate
         StartCoroutine(f_LoadGameSceneAsync()); //GameScene 비동기 로드 + 초기화 루틴 실행
         //StartCoroutine(f_LoadTitleSceneAsync());
+        */
+
+        f_SpawnManagers();
+
+        if (isFirstLoad)
+        {
+            isFirstLoad = false;
+            StartCoroutine(f_LoadTitleSceneAsync()); // 최초 실행시 TitleScene
+        }
+        else
+        {
+            StartCoroutine(f_LoadGameSceneAsync()); // 그 외의 경우 GameScene
+        }
     }
 
     /// <summary>Manager 프리팹을 한 번만 생성하는 메소드</summary>
