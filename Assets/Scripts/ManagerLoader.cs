@@ -6,8 +6,8 @@ using System.Collections;
 
 /*
  * [깨달은 점]
- * Unity에서 자기 자신을 재로드하는 것은 Unity의 고질적인 구조적 문제을 야기한다.
- * 쓰지말자
+ * 1. Unity에서 자기 자신을 재로드하는 것은 Unity의 고질적인 구조적 문제을 야기한다. 쓰지말자
+ * 2. 코드에서 중요한것들이 여럿있겠지만, 초기화가 게임 프로그램에서는 가장 중요하다.
  */
 
 
@@ -15,6 +15,7 @@ using System.Collections;
 /// [ManagerLoader 클래스]
 /// InitScene에서 각종 Manager들을 단 한 번만 Instantiate하고,
 /// GameScene을 비동기로 로드한 후 안정적인 초기화를 수행하는 역할을 수행하는 클래스
+/// 게임내 사용중인 Manager들 간의 연결, Manager와 오브젝트, 프리팹들간의 연결을 조율하기 위해 초기화와 로딩을 진행하는 클래스
 /// </summary>
 public class ManagerLoader : MonoBehaviour
 {
@@ -51,11 +52,14 @@ public class ManagerLoader : MonoBehaviour
         if (isFirstLoad)
         {
             isFirstLoad = false;
-            StartCoroutine(f_LoadTitleSceneAsync()); // 최초 실행시 TitleScene
+
+            //최초 실행시 TitleScene 비동기 로딩 루틴 수행
+            StartCoroutine(f_LoadTitleSceneAsync());
         }
         else
         {
-            StartCoroutine(f_LoadGameSceneAsync()); // 그 외의 경우 GameScene
+            //그 외의 경우 GameScene 비동기 로딩 루틴 수행
+            StartCoroutine(f_LoadGameSceneAsync());
         }
     }
 
@@ -127,8 +131,8 @@ public class ManagerLoader : MonoBehaviour
         yield return new WaitUntil(() => asyncoperation.isDone);
 
         //GameScene 내 모든 오브젝트가 생성되도록 2프레임 대기(하단의 초기화 타이밍의 조율을 위해 필요)
-        yield return new WaitForEndOfFrame();
-        yield return null;
+        yield return new WaitForEndOfFrame(); //1프레임
+        yield return null;  //2프레임
 
         //영향력 적은 순서대로 초기화 (UI → Camera → Target → Game)
         UIManager.Instance?.f_Init();
